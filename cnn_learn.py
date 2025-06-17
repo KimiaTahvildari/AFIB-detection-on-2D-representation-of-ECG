@@ -7,9 +7,9 @@ import os
 import cv2
 import random
 import pickle
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
-from tensorflow.keras.callbacks import TensorBoard
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
+from keras.callbacks import TensorBoard
 import time
 import datetime
 
@@ -99,7 +99,7 @@ for dense_layer in dense_layers:
             # checkpoint_path = "training_1/cp.ckpt"
             # checkpoint_dir = os.path.dirname(checkpoint_path)
             # cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
-                                                             save_weights_only=True,
-                                                             verbose=1)
+                                                             #save_weights_only=True,
+                                                             #verbose=1)
 
             model.fit(X, y, batch_size=32, validation_split=0.1, epochs=20, callbacks=[tensorboard])

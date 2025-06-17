@@ -162,7 +162,7 @@ class SegmentVisualization(object):
             print('Unknown key')
 
 
-signal_path = 'datasets/mitbih_afdb/04015'
+signal_path = r'C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\AFDB\04015'
 my_visu = SegmentVisualization(signal_path)
 
 all_segments = my_visu.search(key='rhythm', value='NORMAL')

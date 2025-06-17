@@ -1,1 +1,40 @@
 .idea
+# Ignore raw ECG data
+AFDB/
+
+# Ignore generated outputs (images)
+outputs/
+outputs/AFIB/
+outputs/nonAFIB/
+
+# Python cache and artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.h5
+*.hdf5
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode project settings
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+venv/
+krol_env/
+ENV/
+env/
+.venv/
+
+# Log files
+*.log
+
+# Mac system files
+._*

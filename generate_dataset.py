@@ -2,6 +2,7 @@ import tensorflow as tf
 import wfdb
 import pandas as pd
 from scipy.signal import spectrogram, cwt, ricker, get_window
+import pywt
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -9,17 +10,19 @@ import numpy as np
 from scipy.stats import kde
 from tqdm import tqdm
 import matplotlib.cm as cm
-from tensorflow.keras import datasets, layers, models, utils
+from keras import datasets, layers, models, utils
 import wfdb
 from scipy.signal import spectrogram, cwt, ricker, get_window
 from mpl_toolkits.mplot3d import Axes3D
-from scipy.stats import kde
+from scipy.stats import gaussian_kde
 from tqdm import tqdm
 import os
 import pickle as pkl
 from matplotlib import image
 from PIL import Image
 plt.ioff()
+
+
 
 AFIB_THRESHOLD = 0.5
 WINDOW = 5
@@ -115,7 +118,7 @@ class TrainProbeGenerator:
         # Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
         try:
             nbins = 300
-            k = kde.gaussian_kde([v, w])
+            k = gaussian_kde([v, w])
             xi, yi = np.mgrid[v.min():v.max():nbins * 1j, w.min():w.max():nbins * 1j]
             zi = k(np.vstack([xi.flatten(), yi.flatten()]))
 
@@ -131,12 +134,12 @@ class TrainProbeGenerator:
             pass
 
 
-directory = os.fsencode('/Users/projekt/Desktop/files')
+directory = os.fsencode(r'C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\AFDB')
 for file in tqdm(os.listdir(directory)):
     filename = os.fsdecode(file.decode())
     if filename.endswith(".dat"):
         print(filename)
-        signal_path = '/Users/projekt/Desktop/files/'+filename[:-4]
+        signal_path = os.path.join(r'C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\AFDB', filename[:-4])
         my_visu = TrainProbeGenerator(signal_path)
         all_segments = my_visu.list_of_segments
         for segment in tqdm(all_segments):
@@ -148,12 +151,12 @@ for file in tqdm(os.listdir(directory)):
                 # scalo = my_visu.show_scalogram(ecg1)
                 atr = my_visu.show_attractor(ecg1)
                 if label=='AFIB':
-                    atr.savefig("/Volumes/Backup Plus/MGR_DATASET/ATRACTOR/AFIB/{}.jpg".format(GLOBAL_NR_AFIB), bbox_inches='tight',
+                    atr.savefig(r"C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\outputs\AFIB\{}.jpg".format(GLOBAL_NR_AFIB), bbox_inches='tight',
                             pad_inches=0, dpi=15)
                     atr.close()
                     GLOBAL_NR_AFIB += 1
                 else:
-                    atr.savefig("/Volumes/Backup Plus/MGR_DATASET/ATRACTOR/nonAFIB/{}.jpg".format(GLOBAL_NR_nonAFIB), bbox_inches='tight',
+                    atr.savefig(r"C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\outputs\nonAFIB\{}.jpg".format(GLOBAL_NR_nonAFIB), bbox_inches='tight',
                                    pad_inches=0, dpi=15)
                     atr.close()
                     GLOBAL_NR_nonAFIB += 1

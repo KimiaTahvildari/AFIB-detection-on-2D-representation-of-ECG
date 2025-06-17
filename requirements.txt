@@ -1,0 +1,9 @@
+tensorflow
+wfdb
+pandas
+numpy
+scipy
+matplotlib
+tqdm
+opencv-python
+Pillow
