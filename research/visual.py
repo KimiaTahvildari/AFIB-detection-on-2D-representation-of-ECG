@@ -1,11 +1,12 @@
 import wfdb
 import pandas as pd
-from scipy.signal import spectrogram, cwt, ricker, get_window, butter, lfilter
+from scipy.signal import spectrogram, get_window
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.stats import kde
+from scipy.stats import gaussian_kde
+import pywt
 from tqdm import tqdm
 import matplotlib.cm as cm
 
@@ -14,22 +15,6 @@ WINDOW = 5
 
 
 class SegmentVisualization(object):
-    """
-    Creating object of this class enables to visualize all three features.
-
-
-    Attributes
-    ----------
-    signal_path : str
-        The path of the recording chosen for visualization
-
-    Example
-    -------
-    my_visu = SegmentVisualization('datasets/mitbih_afdb/04015')
-
-
-    """
-
     def __init__(self, signal_path):
         self.signal_path = signal_path
         self.ann = wfdb.rdann(self.signal_path, 'atr')
@@ -65,10 +50,7 @@ class SegmentVisualization(object):
             chunk = df[i * chunk_size:(i + 1) * chunk_size]
             if len(chunk) == chunk_size:
                 ratio = len(chunk.loc[chunk.rhythm == "(AFIB"]) / 3000
-                if ratio >= AFIB_THRESHOLD:
-                    rhythm = 'AFIB'
-                else:
-                    rhythm = 'NORMAL'
+                rhythm = 'AFIB' if ratio >= AFIB_THRESHOLD else 'NORMAL'
                 list_of_df.append({'index': i, 'ratio': ratio, 'rhythm': rhythm, 'chunk': chunk})
         return list_of_df
 
@@ -76,35 +58,65 @@ class SegmentVisualization(object):
     def show_segment(segment):
         plt.figure()
         plt.plot(segment)
-        #plt.show()
-        plt.savefig("segment_plot.png")
-        plt.close()
-
         plt.xlabel('Probes')
         plt.ylabel('ECG(mV)')
+        plt.savefig("segment_plot.png")
+        plt.close()
 
     @staticmethod
     def show_spectogram(segment):
         window = get_window('hamming', 128)
         f, t, Sxx = spectrogram(segment, fs=250.0, window=window)
+
+        # Gray version
         plt.figure()
-        plt.pcolormesh(t, f, 10 * np.log10(Sxx), cmap=cm.gray)
+        plt.pcolormesh(t, f, 10 * np.log10(Sxx), cmap='gray')
         plt.ylabel('Frequency [Hz]')
         plt.xlabel('Time [sec]')
+        plt.title("Spectrogram (Gray)")
+        plt.savefig("spectrogram_gray.png")
+        plt.close()
+
+        # Blue version
+        plt.figure()
+        plt.pcolormesh(t, f, 10 * np.log10(Sxx), cmap='Blues')
+        plt.ylabel('Frequency [Hz]')
+        plt.xlabel('Time [sec]')
+        plt.title("Spectrogram (Blues)")
+        plt.savefig("spectrogram_blues.png")
+        plt.close()
 
     @staticmethod
     def show_scalogram(segment):
-        plt.figure()
-        widths = np.arange(1, 256)
-        cwt_for_segment = cwt(segment, ricker, widths)
-        plt.imshow(cwt_for_segment, extent=[-1, 1, 1, 31], cmap='BrBG', aspect='auto',
-                   vmax=abs(cwt_for_segment).max(), vmin=-abs(cwt_for_segment).max())
+        scales = np.arange(1, 128)
+        sampling_rate = 250.0
+        sampling_period = 1.0 / sampling_rate
+
+        # Use Mexican hat wavelet
+        coefficients, freqs = pywt.cwt(segment, scales, 'mexh', sampling_period=sampling_period)
+        time = np.arange(len(segment)) * sampling_period
+        extent = [time[0], time[-1], scales[-1], scales[0]]  # Flip y-axis (scale)
+
+        # BrBG version
+        plt.figure(figsize=(10, 4))
+        plt.imshow(np.abs(coefficients), extent=extent, cmap='BrBG', aspect='auto')
+        plt.xlabel("Time [sec]")
+        plt.ylabel("Scale")
+        plt.title("Scalogram (BrBG)")
+        plt.savefig("scalogram_brbg.png")
+        plt.close()
+
+        # Blues version
+        plt.figure(figsize=(10, 4))
+        plt.imshow(np.abs(coefficients), extent=extent, cmap='Blues', aspect='auto')
+        plt.xlabel("Time [sec]")
+        plt.ylabel("Scale")
+        plt.title("Scalogram (Blues)")
+        plt.savefig("scalogram_blues.png")
+        plt.close()
 
     @staticmethod
     def show_attractor(segment):
-        # todo:
-        #sprawdzic od ktorej probki te opoznienia, czy na pewno 66(1/3 cyklu) i czy nie powinno byc fltracji
-        # OPTIMAL WYSZLO 7?
         tau = 220
         x = np.array(segment[2 * tau:])
         y = np.array(segment[tau:-tau])
@@ -114,53 +126,52 @@ class SegmentVisualization(object):
 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-
         ax.plot(x, y, z, label="attractor reconstruction (Tekens' delay)")
         ax.legend()
         ax.set_xlabel('X axis')
         ax.set_ylabel('Y axis')
         ax.set_zlabel('Z axis')
-
-
-        plt.show()
         plt.savefig("attractor_3d.png")
         plt.close()
+
         plt.figure()
         plt.plot(y, x)
         plt.xlabel('x')
         plt.ylabel('y')
+        plt.savefig("attractor_xy.png")
+        plt.close()
 
-
-        # 2d attractor
-        # plot x, y czy v, w?
         v = (x + y - 2 * z) / np.sqrt(6)
         w = (x - y) / np.sqrt(2)
         plt.figure()
         plt.plot(v, w)
         plt.xlabel('v')
         plt.ylabel('w')
+        plt.savefig("attractor_vw.png")
+        plt.close()
 
         x = v
         y = w
-        # Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
         nbins = 300
-        k = kde.gaussian_kde([x, y])
+        k = gaussian_kde([x, y])
         xi, yi = np.mgrid[x.min():x.max():nbins * 1j, y.min():y.max():nbins * 1j]
         zi = k(np.vstack([xi.flatten(), yi.flatten()]))
 
-        # Make the plot
         plt.figure()
         plt.pcolormesh(xi, yi, zi.reshape(xi.shape))
-        plt.show()
+        plt.xlabel('v')
+        plt.ylabel('w')
+        plt.title("Attractor KDE")
         plt.savefig("attractor_kde.png")
         plt.close()
 
+        plt.figure()
+        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=plt.cm.Greens_r)
         plt.xlabel('v')
         plt.ylabel('w')
-
-        # Change color palette
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=plt.cm.Greens_r)
-        plt.show()
+        plt.title("Attractor KDE (Green)")
+        plt.savefig("attractor_kde_green.png")
+        plt.close()
 
     def search(self, key='rhythm', value='AFIB', output=None):
         if key in self.__keys:
@@ -177,6 +188,6 @@ my_visu = SegmentVisualization(signal_path)
 all_segments = my_visu.search(key='rhythm', value='NORMAL')
 segment = all_segments[100]['chunk']['ECG1']
 my_visu.show_segment(segment)
-# my_visu.show_spectogram(segment)
-# my_visu.show_scalogram(segment)
+my_visu.show_spectogram(segment)
+my_visu.show_scalogram(segment)
 my_visu.show_attractor(segment)

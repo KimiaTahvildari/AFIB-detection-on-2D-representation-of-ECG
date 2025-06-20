@@ -2,7 +2,6 @@ import tensorflow as tf
 import wfdb
 import pandas as pd
 from scipy.signal import spectrogram, cwt, ricker, get_window
-import pywt
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -65,7 +64,7 @@ class TrainProbeGenerator:
         for i in range(number_chunks):
             chunk = df[i * chunk_size:(i + 1) * chunk_size]
             if len(chunk) == chunk_size:
-                ratio = len(chunk.loc[chunk.rhythm == "(AFIB"]) / chunk_size
+                ratio = len(chunk.loc[chunk.rhythm == "(AFIB)"]) / chunk_size
                 if ratio >= AFIB_THRESHOLD:
                     rhythm = 'AFIB'
                 else:
@@ -122,24 +121,31 @@ class TrainProbeGenerator:
             xi, yi = np.mgrid[v.min():v.max():nbins * 1j, w.min():w.max():nbins * 1j]
             zi = k(np.vstack([xi.flatten(), yi.flatten()]))
 
-            atr = plt
+            '''atr = plt
             atr.figure()
             atr.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=cm.gray)
             atr.gca().set_axis_off()
             atr.margins(0, 0)
             atr.gca().xaxis.set_major_locator(plt.NullLocator())
             atr.gca().yaxis.set_major_locator(plt.NullLocator())
-            return atr
+            return atr'''
+            fig, ax = plt.subplots()
+            ax.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=cm.gray)
+            ax.set_axis_off()
+            ax.margins(0, 0)
+            ax.xaxis.set_major_locator(plt.NullLocator())
+            ax.yaxis.set_major_locator(plt.NullLocator())
+            return fig
         except:
             pass
 
 
-directory = os.fsencode(r'C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\AFDB')
+directory = os.fsencode('//home//kimia//AFIB-detection-on-2D-representation-of-ECG//AFDB')
 for file in tqdm(os.listdir(directory)):
     filename = os.fsdecode(file.decode())
     if filename.endswith(".dat"):
         print(filename)
-        signal_path = os.path.join(r'C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\AFDB', filename[:-4])
+        signal_path = os.path.join(r'/home/kimia/AFIB-detection-on-2D-representation-of-ECG/AFDB', filename[:-4])
         my_visu = TrainProbeGenerator(signal_path)
         all_segments = my_visu.list_of_segments
         for segment in tqdm(all_segments):
@@ -149,14 +155,15 @@ for file in tqdm(os.listdir(directory)):
             try:
                 # specto = my_visu.show_spectogram(ecg1)
                 # scalo = my_visu.show_scalogram(ecg1)
-                atr = my_visu.show_attractor(ecg1)
+                fig = my_visu.show_attractor(ecg1)
                 if label=='AFIB':
-                    atr.savefig(r"C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\outputs\AFIB\{}.jpg".format(GLOBAL_NR_AFIB), bbox_inches='tight',
-                            pad_inches=0, dpi=15)
-                    atr.close()
+            
+                    fig.savefig(r"/home/kimia/AFIB-detection-on-2D-representation-of-ECG/AFDB/outputs/AFIB/{}.jpg".format(GLOBAL_NR_AFIB), bbox_inches='tight',
+                            #pad_inches=0, dpi=15)
+                    plt.close(fig)
                     GLOBAL_NR_AFIB += 1
                 else:
-                    atr.savefig(r"C:\Users\Kimia\Downloads\GIthub exercise\AFIB-krol\outputs\nonAFIB\{}.jpg".format(GLOBAL_NR_nonAFIB), bbox_inches='tight',
+                    atr.savefig(r"/home/kimia/AFIB-detection-on-2D-representation-of-ECG/AFDB/outputs/nonAFIB/{}.jpg".format(GLOBAL_NR_nonAFIB), bbox_inches='tight',
                                    pad_inches=0, dpi=15)
                     atr.close()
                     GLOBAL_NR_nonAFIB += 1

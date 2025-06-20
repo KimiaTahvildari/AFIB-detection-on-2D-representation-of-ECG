@@ -38,3 +38,90 @@ env/
 
 # Mac system files
 ._*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+kvenv/
+kvenv1/
+venv/
+.env/
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs
+logs/
+*.log
+
+# Pickled data
+*.pickle
+X.pickle
+y.pickle
+
+# Images (if you don't want to version your generated figures)
+*.png
+*.jpg
+*.jpeg
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# macOS
+.DS_Store
+
+# pytest
+.pytest_cache/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+kvenv/
+kvenv1/
+venv/
+.env/
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs
+logs/
+*.log
+
+# Pickled data
+*.pickle
+X.pickle
+y.pickle
+
+# Images (if you don't want to version your generated figures)
+*.png
+*.jpg
+*.jpeg
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# macOS
+.DS_Store
+
+# pytest
+.pytest_cache/

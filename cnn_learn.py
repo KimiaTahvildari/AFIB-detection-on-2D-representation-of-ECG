@@ -13,15 +13,15 @@ from keras.callbacks import TensorBoard
 import time
 import datetime
 
-DATADIR = '/media/bartek/Storage/DATASET/SPECTROGRAM'
-CATEGORIES = ['AFIB', 'nonAFIB']
+DATADIR = '/home/kimia/AFIB-detection-on-2D-representation-of-ECG/AFDB/outputs/spectrogram'
+CATEGORIES = ['AFIB', 'NORMAL']
 IMG_SIZE = 50
 
 training_data = []
 
 dense_layers = [2]#[0, 1, 2]
-layer_sizes = [32] #[32, 64, 128]
-conv_layers = [2]#[1, 2, 3]
+layer_sizes = [128] #[32, 64, 128]
+conv_layers = [3]#[1, 2, 3]
 
 
 def create_training_data():
